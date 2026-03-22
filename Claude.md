@@ -1,7 +1,17 @@
 # Mann Shanthi (मन शांति)
 
 ## What this app is
-A mental health app for Indian millennials focused on stress reduction. "Mann Shanthi" means "peace of mind" in Hindi/Sanskrit. Clinical content (journal prompts, affirmations, breathing guidance) is authored by **Manoshi**, a licensed therapist and the developer's sister-in-law.
+A mental health app for Indian millennials focused on stress reduction. "Mann Shanthi" means "peace of mind" in Hindi/Sanskrit. Clinical content (journal prompts, affirmations, breathing guidance) is authored by **Manoshi Vin, LCSW** — a board-certified Licensed Clinical Social Worker with 15+ years of experience in adult and pediatric mental health.
+
+## About Manoshi Vin
+- **Credentials:** Masters in Social Work from Boston University, specialization in Behavioral Medicine from BU School of Medicine
+- **Experience:** 15+ years across schools, hospitals, and outpatient clinics. Has owned her own practice since 2016 and expanded to global clients in 2020.
+- **Specializations:** Depression & anxiety management, intergenerational & life transition trauma, organizational behaviors, resilience building, women's mental health, immigrant & LGBTQ communities
+- **Academic:** Authored articles on intergenerational and immigrant trauma; practicum advisor for Boston University, Boston College, Hunter College, University of Washington, and UT Austin
+- **Approach:** Strength-based perspective — clients set the goals and pace. Therapy-informed content that is intentionally accessible.
+- **Practice:** Vin Therapy Group (Atlanta, GA) — licensed in Georgia and Washington States
+- **Website:** [manoshivin.com](https://www.manoshivin.com)
+- She is also the developer's sister-in-law.
 
 ## Stack
 - **React Native** with **Expo** (managed workflow)

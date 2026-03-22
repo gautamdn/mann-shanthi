@@ -144,12 +144,12 @@ export default function OnboardingFlow() {
         {renderDots()}
         <View style={styles.centerContent}>
           <Text style={styles.manoshiEmoji}>🧠</Text>
-          <Text style={styles.title}>Meet Manoshi</Text>
+          <Text style={styles.title}>Meet Manoshi Vin, LCSW</Text>
           <Text style={styles.body}>
-            Every prompt, every affirmation in this app is crafted by Manoshi — a licensed therapist who understands the unique pressures of our generation.
+            Every prompt and affirmation in this app is crafted by Manoshi — a Licensed Clinical Social Worker with 15+ years of experience in mental health.
           </Text>
           <Text style={styles.bodySecondary}>
-            From family expectations to work burnout, she writes with empathy and without judgement. This is therapy-informed content you can trust.
+            Trained at Boston University School of Medicine, Manoshi specializes in anxiety, intergenerational trauma, and resilience. She writes from a strength-based perspective — with empathy, without judgement.
           </Text>
         </View>
         <PillButton
