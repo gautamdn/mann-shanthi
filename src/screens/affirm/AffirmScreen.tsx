@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -20,7 +21,7 @@ export default function AffirmScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateX = useSharedValue(0);
 
-  const currentAffirmation = affirmations[currentIndex % affirmations.length];
+  const current = affirmations[currentIndex];
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % affirmations.length);
@@ -50,16 +51,19 @@ export default function AffirmScreen() {
   }));
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Text style={styles.title}>Daily Affirmation</Text>
-      <Text style={styles.subtitle}>Swipe for more</Text>
 
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.card, animatedCardStyle]}>
-          <Text style={styles.affirmationText}>{currentAffirmation.text}</Text>
-          <Text style={styles.author}>— {currentAffirmation.author}</Text>
-        </Animated.View>
-      </GestureDetector>
+      <View style={styles.cardContainer}>
+        <GestureDetector gesture={panGesture}>
+          <Animated.View style={[styles.card, animatedCardStyle]}>
+            <Text style={styles.emoji}>{current.emoji}</Text>
+            <Text style={styles.affirmationText}>{current.text}</Text>
+            <Text style={styles.subtext}>{current.subtext}</Text>
+            <Text style={styles.author}>— {current.author}</Text>
+          </Animated.View>
+        </GestureDetector>
+      </View>
 
       <View style={styles.dotRow}>
         {affirmations.map((_, index) => (
@@ -67,39 +71,34 @@ export default function AffirmScreen() {
             key={index}
             style={[
               styles.dot,
-              index === currentIndex % affirmations.length && styles.dotActive,
+              index === currentIndex && styles.dotActive,
             ]}
           />
         ))}
       </View>
 
-      <View style={styles.navRow}>
-        <TouchableOpacity style={styles.navButton} onPress={goToPrev}>
-          <Text style={styles.navButtonText}>← Previous</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={goToNext}>
-          <Text style={styles.navButtonText}>Next →</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
+        <Text style={styles.nextButtonText}>Next →</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
     padding: spacing.lg,
-    paddingTop: spacing.xl,
     alignItems: 'center',
   },
   title: {
     ...typography.heading,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.lg,
   },
-  subtitle: {
-    ...typography.caption,
-    marginBottom: spacing.xl,
+  cardContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
   },
   card: {
     backgroundColor: colors.card,
@@ -108,14 +107,23 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
     padding: spacing.xl,
     width: SCREEN_WIDTH - spacing.lg * 2,
-    minHeight: 200,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emoji: {
+    fontSize: 48,
+    marginBottom: spacing.lg,
   },
   affirmationText: {
-    ...typography.bodyMedium,
-    fontSize: 20,
-    lineHeight: 30,
+    ...typography.heading,
+    fontSize: 22,
+    lineHeight: 32,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  subtext: {
+    ...typography.body,
+    color: colors.textMuted,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -126,7 +134,6 @@ const styles = StyleSheet.create({
   dotRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.xl,
     marginBottom: spacing.lg,
   },
   dot: {
@@ -139,16 +146,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentPink,
     width: 20,
   },
-  navRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  navButton: {
-    paddingHorizontal: spacing.lg,
+  nextButton: {
+    backgroundColor: colors.accentPink,
+    borderRadius: borderRadius.pill,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    marginBottom: spacing.lg,
   },
-  navButtonText: {
-    ...typography.caption,
-    color: colors.accentPink,
+  nextButtonText: {
+    ...typography.button,
   },
 });

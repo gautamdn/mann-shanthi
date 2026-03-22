@@ -1,173 +1,195 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
+import { Card } from '../../components/common/Card';
+import { PillButton } from '../../components/common/PillButton';
 
 interface GroundingStep {
   count: number;
   sense: string;
+  emoji: string;
   prompt: string;
 }
 
 const GROUNDING_STEPS: GroundingStep[] = [
-  { count: 5, sense: 'See', prompt: 'Name 5 things you can see right now' },
-  { count: 4, sense: 'Touch', prompt: 'Name 4 things you can touch' },
-  { count: 3, sense: 'Hear', prompt: 'Name 3 things you can hear' },
-  { count: 2, sense: 'Smell', prompt: 'Name 2 things you can smell' },
-  { count: 1, sense: 'Taste', prompt: 'Name 1 thing you can taste' },
+  { count: 5, sense: 'SEE', emoji: '👁️', prompt: '5 things you can see' },
+  { count: 4, sense: 'TOUCH', emoji: '✋', prompt: '4 things you can touch' },
+  { count: 3, sense: 'HEAR', emoji: '👂', prompt: '3 things you can hear' },
+  { count: 2, sense: 'SMELL', emoji: '👃', prompt: '2 things you can smell' },
+  { count: 1, sense: 'TASTE', emoji: '👅', prompt: '1 thing you can taste' },
 ];
 
 export default function GroundScreen() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [expandedStep, setExpandedStep] = useState<number | null>(null);
   const [responses, setResponses] = useState<string[][]>(
     GROUNDING_STEPS.map((step) => Array(step.count).fill(''))
   );
-  const [isComplete, setIsComplete] = useState(false);
 
-  const step = GROUNDING_STEPS[currentStep];
+  const isStepComplete = (stepIndex: number): boolean => {
+    return responses[stepIndex].every((r) => r.trim().length > 0);
+  };
 
-  const handleResponseChange = (index: number, value: string) => {
+  const allComplete = GROUNDING_STEPS.every((_, i) => isStepComplete(i));
+
+  const handleToggleStep = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setExpandedStep(expandedStep === index ? null : index);
+  };
+
+  const handleResponseChange = (stepIndex: number, inputIndex: number, value: string) => {
     const newResponses = [...responses];
-    newResponses[currentStep] = [...newResponses[currentStep]];
-    newResponses[currentStep][index] = value;
+    newResponses[stepIndex] = [...newResponses[stepIndex]];
+    newResponses[stepIndex][inputIndex] = value;
     setResponses(newResponses);
   };
 
-  const handleNext = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (currentStep < GROUNDING_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setIsComplete(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  };
-
   const handleReset = () => {
-    setCurrentStep(0);
+    setExpandedStep(null);
     setResponses(GROUNDING_STEPS.map((s) => Array(s.count).fill('')));
-    setIsComplete(false);
   };
 
-  if (isComplete) {
+  if (allComplete) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.completeContainer}>
           <Text style={styles.completeEmoji}>🌿</Text>
-          <Text style={styles.completeTitle}>You did it!</Text>
+          <Text style={styles.completeTitle}>Well done!</Text>
           <Text style={styles.completeBody}>
             Take a moment to notice how you feel. You've reconnected with the present moment.
           </Text>
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Do it again</Text>
-          </TouchableOpacity>
+          <PillButton
+            label="Do it again"
+            onPress={handleReset}
+            color={colors.accentGreen}
+            style={styles.resetButton}
+          />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Ground Yourself</Text>
-
-      <View style={styles.progressRow}>
-        {GROUNDING_STEPS.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.progressDot,
-              index === currentStep && styles.progressDotActive,
-              index < currentStep && styles.progressDotDone,
-            ]}
-          />
-        ))}
-      </View>
-
-      <View style={styles.stepCard}>
-        <Text style={styles.stepCount}>{step.count}</Text>
-        <Text style={styles.stepSense}>things you can {step.sense.toLowerCase()}</Text>
-        <Text style={styles.stepPrompt}>{step.prompt}</Text>
-
-        {Array.from({ length: step.count }).map((_, index) => (
-          <TextInput
-            key={index}
-            style={styles.input}
-            placeholder={`${step.sense} #${index + 1}`}
-            placeholderTextColor={colors.textMuted}
-            value={responses[currentStep][index]}
-            onChangeText={(value) => handleResponseChange(index, value)}
-          />
-        ))}
-      </View>
-
-      <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-        <Text style={styles.nextButtonText}>
-          {currentStep < GROUNDING_STEPS.length - 1 ? 'Next' : 'Done'}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Ground Yourself</Text>
+        <Text style={styles.intro}>
+          Use your senses to anchor yourself in the present moment. Tap each step and name what you notice around you.
         </Text>
-      </TouchableOpacity>
-    </ScrollView>
+
+        {GROUNDING_STEPS.map((step, index) => {
+          const isExpanded = expandedStep === index;
+          const complete = isStepComplete(index);
+
+          return (
+            <View key={step.sense}>
+              <TouchableOpacity
+                style={[
+                  styles.stepHeader,
+                  complete && styles.stepHeaderComplete,
+                ]}
+                onPress={() => handleToggleStep(index)}
+              >
+                <View style={styles.stepHeaderLeft}>
+                  <Text style={styles.stepEmoji}>{step.emoji}</Text>
+                  <View>
+                    <Text style={styles.stepSense}>{step.sense}</Text>
+                    <Text style={styles.stepPrompt}>{step.prompt}</Text>
+                  </View>
+                </View>
+                {complete ? (
+                  <Text style={styles.checkmark}>✓</Text>
+                ) : (
+                  <Text style={styles.chevron}>{isExpanded ? '▲' : '▼'}</Text>
+                )}
+              </TouchableOpacity>
+
+              {isExpanded && (
+                <Card style={styles.inputCard}>
+                  {Array.from({ length: step.count }).map((_, inputIndex) => (
+                    <TextInput
+                      key={inputIndex}
+                      style={styles.input}
+                      placeholder={`${step.sense.charAt(0)}${step.sense.slice(1).toLowerCase()} #${inputIndex + 1}`}
+                      placeholderTextColor={colors.textMuted}
+                      value={responses[index][inputIndex]}
+                      onChangeText={(value) => handleResponseChange(index, inputIndex, value)}
+                    />
+                  ))}
+                </Card>
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingBottom: spacing.xxl,
   },
   title: {
     ...typography.heading,
-    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  intro: {
+    ...typography.body,
+    color: colors.textMuted,
     marginBottom: spacing.lg,
   },
-  progressRow: {
+  stepHeader: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  progressDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.cardBorder,
-  },
-  progressDotActive: {
-    backgroundColor: colors.accentGreen,
-    width: 24,
-    borderRadius: 5,
-  },
-  progressDotDone: {
-    backgroundColor: colors.accentGreen,
-  },
-  stepCard: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: colors.card,
     borderRadius: borderRadius.card,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     padding: spacing.lg,
-    alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
   },
-  stepCount: {
-    fontSize: 48,
-    fontFamily: 'Inter_700Bold',
-    color: colors.accentGreen,
-    marginBottom: spacing.xs,
+  stepHeaderComplete: {
+    borderColor: colors.accentGreen,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accentGreen,
+  },
+  stepHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    flex: 1,
+  },
+  stepEmoji: {
+    fontSize: 24,
   },
   stepSense: {
     ...typography.bodyMedium,
-    marginBottom: spacing.sm,
   },
   stepPrompt: {
     ...typography.caption,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
+  },
+  checkmark: {
+    fontSize: 18,
+    color: colors.accentGreen,
+    fontFamily: 'Inter_700Bold',
+  },
+  chevron: {
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  inputCard: {
+    marginBottom: spacing.sm,
+    marginTop: -spacing.xs,
   },
   input: {
     width: '100%',
@@ -176,15 +198,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
     ...typography.body,
-  },
-  nextButton: {
-    backgroundColor: colors.accentGreen,
-    borderRadius: borderRadius.pill,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    ...typography.button,
   },
   completeContainer: {
     flex: 1,
@@ -207,12 +220,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   resetButton: {
-    backgroundColor: colors.accentGreen,
-    borderRadius: borderRadius.pill,
-    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
-  },
-  resetButtonText: {
-    ...typography.button,
   },
 });

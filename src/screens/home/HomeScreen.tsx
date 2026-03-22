@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { colors } from '../../theme/colors';
@@ -7,18 +8,11 @@ import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
 import { useUserStore } from '../../store/userStore';
 import { useMoodLog } from '../../hooks/useMoodLog';
-import { getGreeting } from '../../utils/dateUtils';
+import { MoodSelector } from '../../components/home/MoodSelector';
+import { FeatureCard } from '../../components/home/FeatureCard';
 import type { MainTabParamList } from '../../navigation/types';
 
 type HomeNav = BottomTabNavigationProp<MainTabParamList, 'Home'>;
-
-const MOODS = [
-  { value: 1 as const, emoji: '😫', label: 'Rough' },
-  { value: 2 as const, emoji: '😔', label: 'Low' },
-  { value: 3 as const, emoji: '😐', label: 'Okay' },
-  { value: 4 as const, emoji: '🙂', label: 'Good' },
-  { value: 5 as const, emoji: '😊', label: 'Great' },
-];
 
 const FEATURES = [
   { key: 'Breathe' as const, title: 'Breathe', subtitle: 'Calm your mind', color: colors.primary },
@@ -34,126 +28,97 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeNav>();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.greeting}>
-        {getGreeting()}, {userName} 👋
-      </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.greeting}>Namaste, {userName} 🙏</Text>
 
-      {streak > 0 && (
-        <Text style={styles.streak}>🔥 {streak} day streak</Text>
-      )}
+        <MoodSelector selectedMood={todayMood} onSelectMood={logMood} />
 
-      <View style={styles.moodCard}>
-        <Text style={styles.moodTitle}>How are you feeling today?</Text>
-        <View style={styles.moodRow}>
-          {MOODS.map((mood) => (
-            <TouchableOpacity
-              key={mood.value}
-              style={[
-                styles.moodButton,
-                todayMood === mood.value && styles.moodButtonActive,
-              ]}
-              onPress={() => logMood(mood.value)}
-            >
-              <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-              <Text style={styles.moodLabel}>{mood.label}</Text>
-            </TouchableOpacity>
+        {streak > 0 && (
+          <View style={styles.streakCard}>
+            <Text style={styles.streakText}>🔥 {streak}-day streak</Text>
+            <Text style={styles.streakSubtext}>Keep showing up for yourself!</Text>
+          </View>
+        )}
+
+        <View style={styles.featureGrid}>
+          {FEATURES.map((feature) => (
+            <FeatureCard
+              key={feature.key}
+              title={feature.title}
+              subtitle={feature.subtitle}
+              color={feature.color}
+              onPress={() => navigation.navigate(feature.key)}
+            />
           ))}
         </View>
-      </View>
 
-      <View style={styles.featureGrid}>
-        {FEATURES.map((feature) => (
-          <TouchableOpacity
-            key={feature.key}
-            style={styles.featureCard}
-            onPress={() => navigation.navigate(feature.key)}
-          >
-            <View style={[styles.featureDot, { backgroundColor: feature.color }]} />
-            <Text style={styles.featureTitle}>{feature.title}</Text>
-            <Text style={styles.featureSubtitle}>{feature.subtitle}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+        <TouchableOpacity
+          style={styles.sosCard}
+          onPress={() => navigation.navigate('Breathe')}
+        >
+          <Text style={styles.sosTitle}>Feeling overwhelmed?</Text>
+          <Text style={styles.sosSubtext}>Tap here to breathe and calm down</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
+  container: {
+    flex: 1,
+  },
   content: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingBottom: spacing.xxl,
   },
   greeting: {
     ...typography.heading,
     fontSize: 26,
-    marginBottom: spacing.xs,
-  },
-  streak: {
-    ...typography.caption,
-    fontSize: 14,
     marginBottom: spacing.lg,
   },
-  moodCard: {
+  streakCard: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.card,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     padding: spacing.lg,
     marginBottom: spacing.lg,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accentAmber,
   },
-  moodTitle: {
+  streakText: {
     ...typography.bodyMedium,
-    marginBottom: spacing.md,
-  },
-  moodRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  moodButton: {
-    alignItems: 'center',
-    padding: spacing.sm,
-    borderRadius: borderRadius.input,
-  },
-  moodButtonActive: {
-    backgroundColor: colors.background,
-  },
-  moodEmoji: {
-    fontSize: 28,
     marginBottom: spacing.xs,
   },
-  moodLabel: {
+  streakSubtext: {
     ...typography.caption,
-    fontSize: 12,
   },
   featureGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,
+    marginBottom: spacing.lg,
   },
-  featureCard: {
-    backgroundColor: colors.card,
+  sosCard: {
+    backgroundColor: colors.errorLight,
     borderRadius: borderRadius.card,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.errorBorder,
     padding: spacing.lg,
-    width: '47%',
   },
-  featureDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginBottom: spacing.sm,
-  },
-  featureTitle: {
+  sosTitle: {
     ...typography.bodyMedium,
+    color: colors.error,
     marginBottom: spacing.xs,
   },
-  featureSubtitle: {
+  sosSubtext: {
     ...typography.caption,
+    color: colors.error,
   },
 });

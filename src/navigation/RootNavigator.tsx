@@ -1,7 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useUserStore } from '../store/userStore';
-import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
+import OnboardingFlow from '../screens/onboarding/OnboardingFlow';
 import { MainTabNavigator } from './MainTabNavigator';
 import type { RootStackParamList } from './types';
 
@@ -15,7 +15,7 @@ export function RootNavigator() {
       {hasOnboarded ? (
         <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       ) : (
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingFlow} />
       )}
     </Stack.Navigator>
   );

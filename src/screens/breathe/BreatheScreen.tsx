@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, {
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSequence,
   Easing,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -12,19 +12,42 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
 import { breathingTechniques, BreathingTechnique } from '../../content/breathingTechniques';
+import { PillButton } from '../../components/common/PillButton';
+import { BreathingCircle } from '../../components/breathe/BreathingCircle';
 
 export default function BreatheScreen() {
   const [selectedTechnique, setSelectedTechnique] = useState<BreathingTechnique>(breathingTechniques[0]);
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const circleScale = useSharedValue(0.5);
   const currentStep = selectedTechnique.steps[currentStepIndex];
 
   const animatedCircleStyle = useAnimatedStyle(() => ({
     transform: [{ scale: circleScale.value }],
   }));
+
+  const startCountdown = useCallback((duration: number) => {
+    setCountdown(duration);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          if (countdownRef.current) clearInterval(countdownRef.current);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const clearCountdown = useCallback(() => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setCountdown(null);
+  }, []);
 
   const runStep = useCallback(() => {
     if (!isActive) return;
@@ -45,8 +68,9 @@ export default function BreatheScreen() {
       });
     }
 
+    startCountdown(step.duration);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [isActive, currentStepIndex, selectedTechnique, circleScale]);
+  }, [isActive, currentStepIndex, selectedTechnique, circleScale, startCountdown]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -66,13 +90,18 @@ export default function BreatheScreen() {
           setIsActive(false);
           setCurrentStepIndex(0);
           setCurrentRound(0);
+          clearCountdown();
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       }
     }, currentStep.duration * 1000);
 
     return () => clearTimeout(timeout);
-  }, [isActive, currentStepIndex, currentRound, runStep, currentStep.duration, selectedTechnique]);
+  }, [isActive, currentStepIndex, currentRound, runStep, currentStep.duration, selectedTechnique, clearCountdown]);
+
+  useEffect(() => {
+    return () => clearCountdown();
+  }, [clearCountdown]);
 
   const handleStart = () => {
     setIsActive(true);
@@ -85,11 +114,12 @@ export default function BreatheScreen() {
     setIsActive(false);
     setCurrentStepIndex(0);
     setCurrentRound(0);
+    clearCountdown();
     circleScale.value = withTiming(0.5, { duration: 300 });
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Text style={styles.title}>Breathe</Text>
 
       {!isActive && (
@@ -117,10 +147,11 @@ export default function BreatheScreen() {
       )}
 
       <View style={styles.circleContainer}>
-        <Animated.View style={[styles.circle, animatedCircleStyle]} />
-        <Text style={styles.stepLabel}>
-          {isActive ? currentStep.label : selectedTechnique.description}
-        </Text>
+        <BreathingCircle
+          animatedStyle={animatedCircleStyle}
+          phaseLabel={isActive ? currentStep.label : selectedTechnique.description}
+          countdown={isActive ? countdown : null}
+        />
         {isActive && (
           <Text style={styles.roundLabel}>
             Round {currentRound + 1} of {selectedTechnique.rounds}
@@ -128,24 +159,21 @@ export default function BreatheScreen() {
         )}
       </View>
 
-      <TouchableOpacity
-        style={[styles.actionButton, isActive && styles.stopButton]}
+      <PillButton
+        label={isActive ? 'Stop' : 'Start'}
         onPress={isActive ? handleStop : handleStart}
-      >
-        <Text style={styles.actionButtonText}>
-          {isActive ? 'Stop' : 'Start'}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        color={isActive ? colors.textMuted : colors.primary}
+        style={styles.actionButton}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
     padding: spacing.lg,
-    paddingTop: spacing.xl,
   },
   title: {
     ...typography.heading,
@@ -182,34 +210,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  circle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: colors.primary,
-    opacity: 0.3,
-    marginBottom: spacing.lg,
-  },
-  stepLabel: {
-    ...typography.bodyMedium,
-    textAlign: 'center',
-    paddingHorizontal: spacing.xl,
-  },
   roundLabel: {
     ...typography.caption,
     marginTop: spacing.sm,
   },
   actionButton: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.pill,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
     marginBottom: spacing.lg,
-  },
-  stopButton: {
-    backgroundColor: colors.textMuted,
-  },
-  actionButtonText: {
-    ...typography.button,
   },
 });

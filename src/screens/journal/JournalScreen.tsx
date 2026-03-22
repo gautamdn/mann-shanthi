@@ -1,100 +1,66 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ScrollView,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
-import { journalPrompts, journalThemes } from '../../content/journalPrompts';
+import { journalThemes, getDailyPrompt, getPromptByTheme } from '../../content/journalPrompts';
+import type { JournalPrompt } from '../../content/journalPrompts';
 import { useJournal } from '../../hooks/useJournal';
 import { formatDate } from '../../utils/dateUtils';
+import { Card } from '../../components/common/Card';
+import { PillButton } from '../../components/common/PillButton';
 
 export default function JournalScreen() {
   const { journalEntries, addJournalEntry } = useJournal();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [currentPrompt, setCurrentPrompt] = useState<JournalPrompt>(getDailyPrompt);
   const [body, setBody] = useState('');
-  const [showHistory, setShowHistory] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const todayPrompt = useMemo(() => {
-    const dayOfYear = Math.floor(
-      (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
-    );
-    const filtered = selectedTheme
-      ? journalPrompts.filter((p) => p.theme === selectedTheme)
-      : journalPrompts;
-    return filtered[dayOfYear % filtered.length];
-  }, [selectedTheme]);
+  const handleThemeSelect = (theme: string) => {
+    if (selectedTheme === theme) {
+      setSelectedTheme(null);
+      setCurrentPrompt(getDailyPrompt());
+    } else {
+      setSelectedTheme(theme);
+      setCurrentPrompt(getPromptByTheme(theme));
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
 
   const handleSave = () => {
     if (!body.trim()) return;
-    addJournalEntry(todayPrompt.text, body.trim());
+    addJournalEntry(currentPrompt.text, body.trim());
     setBody('');
+    setShowSuccess(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setTimeout(() => setShowSuccess(false), 2500);
   };
 
-  if (showHistory) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.historyHeader}>
-          <Text style={styles.title}>Journal History</Text>
-          <TouchableOpacity onPress={() => setShowHistory(false)}>
-            <Text style={styles.backLink}>Write</Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={journalEntries}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.historyList}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No entries yet. Start writing!</Text>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.historyCard}>
-              <Text style={styles.historyDate}>{formatDate(item.date)}</Text>
-              <Text style={styles.historyPrompt}>{item.prompt}</Text>
-              <Text style={styles.historyBody}>{item.body}</Text>
-            </View>
-          )}
-        />
-      </View>
-    );
-  }
+  const truncate = (text: string, maxLength: number): string => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength).trimEnd() + '...';
+  };
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Journal</Text>
-        <TouchableOpacity onPress={() => setShowHistory(true)}>
-          <Text style={styles.historyLink}>History ({journalEntries.length})</Text>
-        </TouchableOpacity>
-      </View>
+  const renderHeader = () => (
+    <View>
+      <Text style={styles.title}>Journal</Text>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.themeScroll}
-        contentContainerStyle={styles.themeRow}
-      >
-        <TouchableOpacity
-          style={[styles.themePill, !selectedTheme && styles.themePillActive]}
-          onPress={() => setSelectedTheme(null)}
-        >
-          <Text style={[styles.themePillText, !selectedTheme && styles.themePillTextActive]}>
-            All
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.themeRow}>
         {journalThemes.map((theme) => (
           <TouchableOpacity
             key={theme}
             style={[styles.themePill, selectedTheme === theme && styles.themePillActive]}
-            onPress={() => setSelectedTheme(theme)}
+            onPress={() => handleThemeSelect(theme)}
           >
             <Text
               style={[
@@ -106,12 +72,13 @@ export default function JournalScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
-
-      <View style={styles.promptCard}>
-        <Text style={styles.promptLabel}>Today's Prompt</Text>
-        <Text style={styles.promptText}>{todayPrompt.text}</Text>
       </View>
+
+      <Card style={styles.promptCard}>
+        <Text style={styles.promptLabel}>Today's Prompt</Text>
+        <Text style={styles.promptText}>{currentPrompt.text}</Text>
+        <Text style={styles.attribution}>Prompt by Manoshi, Licensed Therapist</Text>
+      </Card>
 
       <TextInput
         style={styles.textArea}
@@ -123,44 +90,65 @@ export default function JournalScreen() {
         onChangeText={setBody}
       />
 
-      <TouchableOpacity
-        style={[styles.saveButton, !body.trim() && styles.saveButtonDisabled]}
-        onPress={handleSave}
-        disabled={!body.trim()}
-      >
-        <Text style={styles.saveButtonText}>Save Entry</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      {showSuccess ? (
+        <View style={styles.successBanner}>
+          <Text style={styles.successText}>Entry saved! Keep showing up for yourself.</Text>
+        </View>
+      ) : (
+        <PillButton
+          label="Save Entry"
+          onPress={handleSave}
+          color={colors.accentAmber}
+          disabled={!body.trim()}
+          style={styles.saveButton}
+        />
+      )}
+
+      {journalEntries.length > 0 && (
+        <Text style={styles.pastTitle}>Past Entries</Text>
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <FlatList
+        data={journalEntries}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No entries yet. Start writing!</Text>
+        }
+        renderItem={({ item }) => (
+          <Card style={styles.entryCard}>
+            <Text style={styles.entryDate}>{formatDate(item.date)}</Text>
+            <Text style={styles.entryBody}>{truncate(item.body, 80)}</Text>
+          </Card>
+        )}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   title: {
     ...typography.heading,
-  },
-  historyLink: {
-    ...typography.caption,
-    color: colors.accentAmber,
-  },
-  themeScroll: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   themeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   themePill: {
     paddingHorizontal: spacing.md,
@@ -182,11 +170,6 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
   promptCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.card,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    padding: spacing.lg,
     marginBottom: spacing.lg,
   },
   promptLabel: {
@@ -196,6 +179,11 @@ const styles = StyleSheet.create({
   },
   promptText: {
     ...typography.bodyMedium,
+    marginBottom: spacing.md,
+  },
+  attribution: {
+    ...typography.caption,
+    fontStyle: 'italic',
   },
   textArea: {
     backgroundColor: colors.card,
@@ -208,51 +196,31 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   saveButton: {
-    backgroundColor: colors.accentAmber,
-    borderRadius: borderRadius.pill,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButtonText: {
-    ...typography.button,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-    paddingTop: spacing.xl,
-  },
-  backLink: {
-    ...typography.caption,
-    color: colors.accentAmber,
-  },
-  historyList: {
-    padding: spacing.lg,
-    paddingTop: 0,
-  },
-  historyCard: {
-    backgroundColor: colors.card,
+  successBanner: {
+    backgroundColor: colors.accentGreen,
     borderRadius: borderRadius.card,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
     padding: spacing.lg,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  successText: {
+    ...typography.bodyMedium,
+    color: colors.textLight,
+  },
+  pastTitle: {
+    ...typography.bodyMedium,
     marginBottom: spacing.md,
   },
-  historyDate: {
+  entryCard: {
+    marginBottom: spacing.md,
+  },
+  entryDate: {
     ...typography.caption,
     marginBottom: spacing.xs,
   },
-  historyPrompt: {
-    ...typography.caption,
-    color: colors.accentAmber,
-    fontStyle: 'italic',
-    marginBottom: spacing.sm,
-  },
-  historyBody: {
+  entryBody: {
     ...typography.body,
   },
   emptyText: {

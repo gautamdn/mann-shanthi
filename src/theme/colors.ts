@@ -16,6 +16,8 @@ export const colors = {
   textLight: '#FFFFFF',
 
   error: '#DC2626',
+  errorLight: '#FEF2F2',
+  errorBorder: '#FECACA',
   success: '#059669',
 } as const;
 

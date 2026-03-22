@@ -1,58 +1,87 @@
 export interface Affirmation {
   id: string;
+  emoji: string;
   text: string;
+  subtext: string;
   author: string;
 }
 
 export const affirmations: Affirmation[] = [
   {
     id: '1',
-    text: 'You are doing better than you think. Progress isn\'t always visible, but it\'s happening.',
+    emoji: '🌱',
+    text: 'You are doing better than you think.',
+    subtext: 'Progress isn\'t always visible, but it\'s happening.',
     author: 'Manoshi',
   },
   {
     id: '2',
-    text: 'It\'s okay to not have everything figured out. You\'re allowed to take life one day at a time.',
+    emoji: '🌤️',
+    text: 'It\'s okay to not have everything figured out.',
+    subtext: 'You\'re allowed to take life one day at a time.',
     author: 'Manoshi',
   },
   {
     id: '3',
-    text: 'Your worth is not defined by your productivity. You matter even on your slow days.',
+    emoji: '💛',
+    text: 'Your worth is not defined by your productivity.',
+    subtext: 'You matter even on your slow days.',
     author: 'Manoshi',
   },
   {
     id: '4',
-    text: 'Comparison is a thief of joy. Your journey is uniquely yours — honor it.',
+    emoji: '🦋',
+    text: 'Comparison is a thief of joy.',
+    subtext: 'Your journey is uniquely yours — honor it.',
     author: 'Manoshi',
   },
   {
     id: '5',
-    text: 'You don\'t have to carry everyone\'s expectations. It\'s okay to put yourself first sometimes.',
+    emoji: '🎒',
+    text: 'You don\'t have to carry everyone\'s expectations.',
+    subtext: 'It\'s okay to put yourself first sometimes.',
     author: 'Manoshi',
   },
   {
     id: '6',
-    text: 'Asking for help is not weakness — it\'s wisdom. You don\'t have to do this alone.',
+    emoji: '🤝',
+    text: 'Asking for help is not weakness — it\'s wisdom.',
+    subtext: 'You don\'t have to do this alone.',
     author: 'Manoshi',
   },
   {
     id: '7',
-    text: 'Rest is not laziness. Your mind and body need time to recharge.',
+    emoji: '🛌',
+    text: 'Rest is not laziness.',
+    subtext: 'Your mind and body need time to recharge.',
     author: 'Manoshi',
   },
   {
     id: '8',
-    text: 'You are more than your job title, your salary, or your relationship status. You are whole as you are.',
+    emoji: '✨',
+    text: 'You are more than your job title or salary.',
+    subtext: 'You are whole as you are.',
     author: 'Manoshi',
   },
   {
     id: '9',
-    text: 'It\'s okay to set boundaries, even with people you love. That\'s self-respect, not selfishness.',
+    emoji: '🚪',
+    text: 'It\'s okay to set boundaries, even with people you love.',
+    subtext: 'That\'s self-respect, not selfishness.',
     author: 'Manoshi',
   },
   {
     id: '10',
-    text: 'Today is a fresh start. Let go of yesterday\'s worries and show up for yourself.',
+    emoji: '🌅',
+    text: 'Today is a fresh start.',
+    subtext: 'Let go of yesterday\'s worries and show up for yourself.',
     author: 'Manoshi',
   },
 ];
+
+export function getDailyAffirmation(): Affirmation {
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  return affirmations[dayOfYear % affirmations.length];
+}
