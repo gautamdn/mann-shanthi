@@ -78,6 +78,26 @@ src/
 - Don't hardcode user name — always pull from store
 - Don't add new dependencies without checking if Expo SDK includes it first
 
+## Animation approach
+- Use React Native's built-in `Animated` API — NOT Reanimated
+- `react-native-reanimated` is in package.json for Expo compatibility but should NOT be imported in source code
+- Swipe gestures use `PanResponder` from React Native
+
 ## Current phase
-**Day 1 of 4-day sprint to TestFlight.**
-Build order: theme → navigation shell → HomeScreen → BreatheScreen → GroundScreen → JournalScreen → AffirmScreen → OnboardingFlow → polish
+**Day 2 of 4-day sprint to TestFlight.**
+
+### Completed
+- [x] Theme system (colors, typography, spacing)
+- [x] Navigation shell (bottom tabs + stack with onboarding gate)
+- [x] Zustand store with AsyncStorage persistence
+- [x] All 6 screens built to spec (Home, Breathe, Ground, Journal, Affirm, Onboarding)
+- [x] Reusable components (ScreenWrapper, Card, PillButton, MoodSelector, FeatureCard, BreathingCircle)
+- [x] Therapist-authored content (affirmations, journal prompts, breathing techniques)
+- [x] Custom hooks (useMoodLog, useStreak, useJournal)
+- [x] Running on Expo Go (SDK 54)
+
+### Next up
+- [ ] Polish: transitions, empty states, keyboard handling
+- [ ] Splash screen + app icon branding
+- [ ] Manoshi profile photo in onboarding
+- [ ] TestFlight build via EAS

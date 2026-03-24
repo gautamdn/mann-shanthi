@@ -77,7 +77,7 @@ export default function JournalScreen() {
       <Card style={styles.promptCard}>
         <Text style={styles.promptLabel}>Today's Prompt</Text>
         <Text style={styles.promptText}>{currentPrompt.text}</Text>
-        <Text style={styles.attribution}>Prompt by Manoshi, Licensed Therapist</Text>
+        <Text style={styles.attribution}>Prompt by Manoshi Vin, LCSW</Text>
       </Card>
 
       <TextInput

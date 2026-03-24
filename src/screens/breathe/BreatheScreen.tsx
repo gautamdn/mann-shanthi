@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -23,12 +17,8 @@ export default function BreatheScreen() {
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const circleScale = useSharedValue(0.5);
+  const circleScale = useRef(new Animated.Value(0.5)).current;
   const currentStep = selectedTechnique.steps[currentStepIndex];
-
-  const animatedCircleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: circleScale.value }],
-  }));
 
   const startCountdown = useCallback((duration: number) => {
     setCountdown(duration);
@@ -57,15 +47,19 @@ export default function BreatheScreen() {
     const isExhale = step.label.includes('Out');
 
     if (isInhale) {
-      circleScale.value = withTiming(1, {
+      Animated.timing(circleScale, {
+        toValue: 1,
         duration: step.duration * 1000,
         easing: Easing.inOut(Easing.ease),
-      });
+        useNativeDriver: true,
+      }).start();
     } else if (isExhale) {
-      circleScale.value = withTiming(0.5, {
+      Animated.timing(circleScale, {
+        toValue: 0.5,
         duration: step.duration * 1000,
         easing: Easing.inOut(Easing.ease),
-      });
+        useNativeDriver: true,
+      }).start();
     }
 
     startCountdown(step.duration);
@@ -107,7 +101,7 @@ export default function BreatheScreen() {
     setIsActive(true);
     setCurrentStepIndex(0);
     setCurrentRound(0);
-    circleScale.value = 0.5;
+    circleScale.setValue(0.5);
   };
 
   const handleStop = () => {
@@ -115,7 +109,11 @@ export default function BreatheScreen() {
     setCurrentStepIndex(0);
     setCurrentRound(0);
     clearCountdown();
-    circleScale.value = withTiming(0.5, { duration: 300 });
+    Animated.timing(circleScale, {
+      toValue: 0.5,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
@@ -148,7 +146,7 @@ export default function BreatheScreen() {
 
       <View style={styles.circleContainer}>
         <BreathingCircle
-          animatedStyle={animatedCircleStyle}
+          scale={circleScale}
           phaseLabel={isActive ? currentStep.label : selectedTechnique.description}
           countdown={isActive ? countdown : null}
         />

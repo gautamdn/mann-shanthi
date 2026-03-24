@@ -1,13 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -19,7 +20,7 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 
 export default function AffirmScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const translateX = useSharedValue(0);
+  const translateX = useRef(new Animated.Value(0)).current;
 
   const current = affirmations[currentIndex];
 
@@ -33,36 +34,45 @@ export default function AffirmScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      translateX.value = event.translationX;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 10,
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -SWIPE_THRESHOLD) {
+          goToNext();
+        } else if (gestureState.dx > SWIPE_THRESHOLD) {
+          goToPrev();
+        }
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 20,
+          mass: 1,
+          stiffness: 200,
+        }).start();
+      },
     })
-    .onEnd((event) => {
-      if (event.translationX < -SWIPE_THRESHOLD) {
-        runOnJS(goToNext)();
-      } else if (event.translationX > SWIPE_THRESHOLD) {
-        runOnJS(goToPrev)();
-      }
-      translateX.value = withSpring(0, { damping: 20 });
-    });
-
-  const animatedCardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+  ).current;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Text style={styles.title}>Daily Affirmation</Text>
 
       <View style={styles.cardContainer}>
-        <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.card, animatedCardStyle]}>
-            <Text style={styles.emoji}>{current.emoji}</Text>
-            <Text style={styles.affirmationText}>{current.text}</Text>
-            <Text style={styles.subtext}>{current.subtext}</Text>
-            <Text style={styles.author}>— {current.author}</Text>
-          </Animated.View>
-        </GestureDetector>
+        <Animated.View
+          style={[styles.card, { transform: [{ translateX }] }]}
+          {...panResponder.panHandlers}
+        >
+          <Text style={styles.emoji}>{current.emoji}</Text>
+          <Text style={styles.affirmationText}>{current.text}</Text>
+          <Text style={styles.subtext}>{current.subtext}</Text>
+          <Text style={styles.author}>— {current.author}</Text>
+        </Animated.View>
       </View>
 
       <View style={styles.dotRow}>

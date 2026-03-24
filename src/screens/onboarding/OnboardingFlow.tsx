@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
@@ -143,13 +143,19 @@ export default function OnboardingFlow() {
       <SafeAreaView style={styles.container}>
         {renderDots()}
         <View style={styles.centerContent}>
-          <Text style={styles.manoshiEmoji}>🧠</Text>
+          <Image
+            source={require('../../../assets/manoshi.jpg')}
+            style={styles.manoshiPhoto}
+          />
           <Text style={styles.title}>Meet Manoshi</Text>
+          <Text style={styles.manoshiCredential}>
+            Board Certified Licensed Clinical Social Worker
+          </Text>
           <Text style={styles.body}>
-            Every prompt, every affirmation in this app is crafted by Manoshi — a licensed therapist who understands the unique pressures of our generation.
+            With 15+ years in mental health, Manoshi specializes in anxiety, depression, and intergenerational trauma — the kind that shows up as family pressure, comparison, and burnout.
           </Text>
           <Text style={styles.bodySecondary}>
-            From family expectations to work burnout, she writes with empathy and without judgement. This is therapy-informed content you can trust.
+            Every prompt and affirmation in this app is crafted by her with empathy, warmth, and zero judgement. This is therapy-informed content you can trust.
           </Text>
         </View>
         <PillButton
@@ -277,8 +283,17 @@ const styles = StyleSheet.create({
   featureDesc: {
     ...typography.caption,
   },
-  manoshiEmoji: {
-    fontSize: 56,
+  manoshiPhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: spacing.lg,
+  },
+  manoshiCredential: {
+    ...typography.caption,
+    color: colors.primary,
+    textAlign: 'center',
+    marginTop: -spacing.sm,
     marginBottom: spacing.lg,
   },
   readyEmoji: {

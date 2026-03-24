@@ -1,21 +1,24 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { AnimatedStyle } from 'react-native-reanimated';
+import { View, Text, Animated, StyleSheet, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
 
 interface BreathingCircleProps {
-  animatedStyle: AnimatedStyle;
+  scale: Animated.Value;
   phaseLabel: string;
   countdown: number | null;
 }
 
 export const BreathingCircle: React.FC<BreathingCircleProps> = ({
-  animatedStyle,
+  scale,
   phaseLabel,
   countdown,
 }) => {
+  const animatedStyle: Animated.WithAnimatedObject<ViewStyle> = {
+    transform: [{ scale }],
+  };
+
   return (
     <View style={styles.wrapper}>
       <Animated.View style={[styles.circle, animatedStyle]} />
