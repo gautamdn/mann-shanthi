@@ -3,10 +3,12 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
 import { useUserStore } from '../../store/userStore';
+import { useAuthStore } from '../../store/authStore';
 import { useMoodLog } from '../../hooks/useMoodLog';
 import { MoodSelector } from '../../components/home/MoodSelector';
 import { FeatureCard } from '../../components/home/FeatureCard';
@@ -24,13 +26,32 @@ const FEATURES = [
 export default function HomeScreen() {
   const userName = useUserStore((state) => state.userName);
   const streak = useUserStore((state) => state.streak);
+  const clearUserData = useUserStore((state) => state.clearUserData);
+  const { isAuthenticated, email, signOut } = useAuthStore();
   const { todayMood, logMood } = useMoodLog();
   const navigation = useNavigation<HomeNav>();
+
+  const handleSignOut = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await signOut();
+    await clearUserData();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.greeting}>Namaste, {userName} 🙏</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.greeting}>Namaste, {userName} 🙏</Text>
+          {isAuthenticated && (
+            <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+              <Text style={styles.signOutText}>Sign out</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {isAuthenticated && email && (
+          <Text style={styles.emailText}>{email}</Text>
+        )}
 
         <MoodSelector selectedMood={todayMood} onSelectMood={logMood} />
 
@@ -77,9 +98,32 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
   greeting: {
     ...typography.heading,
     fontSize: 26,
+    flex: 1,
+  },
+  signOutButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.pill,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.card,
+  },
+  signOutText: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  emailText: {
+    ...typography.caption,
+    color: colors.textMuted,
     marginBottom: spacing.lg,
   },
   streakCard: {

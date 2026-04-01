@@ -50,9 +50,9 @@ export default function OnboardingFlow() {
       <SafeAreaView style={styles.container}>
         {renderDots()}
         <View style={styles.centerContent}>
-          <Text style={styles.appName}>मन शांति</Text>
-          <Text style={styles.appNameEnglish}>Mann Shanthi</Text>
-          <Text style={styles.tagline}>Peace of mind, in your pocket</Text>
+          <Text style={styles.appName}>अंतरा</Text>
+          <Text style={styles.appNameEnglish}>Antara</Text>
+          <Text style={styles.tagline}>Your inner calm, always within reach</Text>
         </View>
         <PillButton
           label="Get started"

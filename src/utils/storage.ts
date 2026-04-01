@@ -1,8 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
-  USER_STORE: '@mann-shanthi/user-store',
+  USER_STORE: '@antara/user-store',
+  _LEGACY_USER_STORE: '@mann-shanthi/user-store',
 } as const;
+
+export async function migrateStorageKeys(): Promise<void> {
+  try {
+    const legacy = await AsyncStorage.getItem(KEYS._LEGACY_USER_STORE);
+    if (legacy !== null) {
+      await AsyncStorage.setItem(KEYS.USER_STORE, legacy);
+      await AsyncStorage.removeItem(KEYS._LEGACY_USER_STORE);
+    }
+  } catch {
+    // best-effort migration
+  }
+}
 
 export async function loadFromStorage<T>(key: string): Promise<T | null> {
   try {
