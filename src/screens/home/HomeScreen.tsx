@@ -17,10 +17,10 @@ import type { MainTabParamList } from '../../navigation/types';
 type HomeNav = BottomTabNavigationProp<MainTabParamList, 'Home'>;
 
 const FEATURES = [
-  { key: 'Breathe' as const, title: 'Breathe', subtitle: 'Calm your mind', color: colors.primary },
-  { key: 'Ground' as const, title: 'Ground', subtitle: '5-4-3-2-1 senses', color: colors.accentGreen },
-  { key: 'Journal' as const, title: 'Journal', subtitle: 'Write it out', color: colors.accentAmber },
-  { key: 'Affirm' as const, title: 'Affirm', subtitle: 'Daily wisdom', color: colors.accentPink },
+  { key: 'Breathe' as const, title: 'Breathe', subtitle: 'Guided breathing', color: colors.primary },
+  { key: 'Ground' as const, title: 'Ground', subtitle: 'Sensory grounding', color: colors.primary },
+  { key: 'Journal' as const, title: 'Journal', subtitle: 'Reflective journaling', color: colors.primary },
+  { key: 'Affirm' as const, title: 'Affirm', subtitle: 'Daily affirmations', color: colors.primary },
 ];
 
 export default function HomeScreen() {
@@ -41,7 +41,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
-          <Text style={styles.greeting}>Namaste, {userName} 🙏</Text>
+          <Text style={styles.greeting}>Namaste, {userName}</Text>
           {isAuthenticated && (
             <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
               <Text style={styles.signOutText}>Sign out</Text>
@@ -57,8 +57,8 @@ export default function HomeScreen() {
 
         {streak > 0 && (
           <View style={styles.streakCard}>
-            <Text style={styles.streakText}>🔥 {streak}-day streak</Text>
-            <Text style={styles.streakSubtext}>Keep showing up for yourself!</Text>
+            <Text style={styles.streakText}>{streak}-day streak</Text>
+            <Text style={styles.streakSubtext}>You are showing up for yourself.</Text>
           </View>
         )}
 
@@ -78,8 +78,8 @@ export default function HomeScreen() {
           style={styles.sosCard}
           onPress={() => navigation.navigate('Breathe')}
         >
-          <Text style={styles.sosTitle}>Feeling overwhelmed?</Text>
-          <Text style={styles.sosSubtext}>Tap here to breathe and calm down</Text>
+          <Text style={styles.sosTitle}>Need a moment?</Text>
+          <Text style={styles.sosSubtext}>Take a breath and return to yourself.</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -150,19 +150,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   sosCard: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: colors.card,
     borderRadius: borderRadius.card,
     borderWidth: 1,
-    borderColor: colors.errorBorder,
+    borderColor: colors.cardBorder,
     padding: spacing.lg,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
   sosTitle: {
     ...typography.bodyMedium,
-    color: colors.error,
     marginBottom: spacing.xs,
   },
   sosSubtext: {
     ...typography.caption,
-    color: colors.error,
   },
 });
