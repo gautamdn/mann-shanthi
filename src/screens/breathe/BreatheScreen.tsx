@@ -6,11 +6,20 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, borderRadius } from '../../theme/spacing';
 import { breathingTechniques, BreathingTechnique } from '../../content/breathingTechniques';
+import { useContentMode } from '../../hooks/useContentMode';
 import { PillButton } from '../../components/common/PillButton';
 import { BreathingCircle } from '../../components/breathe/BreathingCircle';
 
 export default function BreatheScreen() {
-  const [selectedTechnique, setSelectedTechnique] = useState<BreathingTechnique>(breathingTechniques[0]);
+  const { getBreathingTechnique } = useContentMode();
+  const { recommendedId } = getBreathingTechnique();
+  const [selectedTechnique, setSelectedTechnique] = useState<BreathingTechnique>(() => {
+    if (recommendedId) {
+      const found = breathingTechniques.find((t) => t.id === recommendedId);
+      if (found) return found;
+    }
+    return breathingTechniques[0];
+  });
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
@@ -144,6 +153,10 @@ export default function BreatheScreen() {
         </View>
       )}
 
+      {!isActive && recommendedId && selectedTechnique.id === recommendedId && (
+        <Text style={styles.recommendedLabel}>Recommended for you</Text>
+      )}
+
       <View style={styles.circleContainer}>
         <BreathingCircle
           scale={circleScale}
@@ -211,6 +224,12 @@ const styles = StyleSheet.create({
   roundLabel: {
     ...typography.caption,
     marginTop: spacing.sm,
+  },
+  recommendedLabel: {
+    ...typography.caption,
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
   actionButton: {
     marginBottom: spacing.lg,

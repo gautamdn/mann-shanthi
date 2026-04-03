@@ -15,24 +15,31 @@ import { spacing, borderRadius } from '../../theme/spacing';
 import { journalThemes, getDailyPrompt, getPromptByTheme } from '../../content/journalPrompts';
 import type { JournalPrompt } from '../../content/journalPrompts';
 import { useJournal } from '../../hooks/useJournal';
+import { useContentMode } from '../../hooks/useContentMode';
 import { formatDate } from '../../utils/dateUtils';
 import { Card } from '../../components/common/Card';
 import { PillButton } from '../../components/common/PillButton';
 
 export default function JournalScreen() {
   const { journalEntries, addJournalEntry } = useJournal();
+  const { getJournalPrompt } = useContentMode();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
-  const [currentPrompt, setCurrentPrompt] = useState<JournalPrompt>(getDailyPrompt);
+  const { prompt: initialPrompt, isAssigned } = getJournalPrompt();
+  const [currentPrompt, setCurrentPrompt] = useState<JournalPrompt>(initialPrompt);
+  const [isCurrentAssigned, setIsCurrentAssigned] = useState(isAssigned);
   const [body, setBody] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleThemeSelect = (theme: string) => {
     if (selectedTheme === theme) {
       setSelectedTheme(null);
-      setCurrentPrompt(getDailyPrompt());
+      const { prompt, isAssigned: assigned } = getJournalPrompt();
+      setCurrentPrompt(prompt);
+      setIsCurrentAssigned(assigned);
     } else {
       setSelectedTheme(theme);
       setCurrentPrompt(getPromptByTheme(theme));
+      setIsCurrentAssigned(false);
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -75,7 +82,9 @@ export default function JournalScreen() {
       </View>
 
       <Card style={styles.promptCard}>
-        <Text style={styles.promptLabel}>Today's Prompt</Text>
+        <Text style={styles.promptLabel}>
+          {isCurrentAssigned ? 'Assigned by your therapist' : "Today's Prompt"}
+        </Text>
         <Text style={styles.promptText}>{currentPrompt.text}</Text>
         <Text style={styles.attribution}>Prompt by Manoshi Vin, LCSW</Text>
       </Card>
