@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -52,7 +53,8 @@ export default function OnboardingFlow() {
         <View style={styles.centerContent}>
           <Text style={styles.appName}>अंतरा</Text>
           <Text style={styles.appNameEnglish}>Antara</Text>
-          <Text style={styles.tagline}>Your inner calm, always within reach</Text>
+          <Text style={styles.byLine}>by Manoshi Vin, LCSW</Text>
+          <Text style={styles.tagline}>Because, you matter.</Text>
         </View>
         <PillButton
           label="Get started"
@@ -99,28 +101,28 @@ export default function OnboardingFlow() {
           <Text style={styles.title}>Your toolkit for calm</Text>
           <View style={styles.featureList}>
             <View style={styles.featureItem}>
-              <Text style={styles.featureEmoji}>🌬️</Text>
+              <Feather name="wind" size={24} color={colors.primary} />
               <View style={styles.featureTextGroup}>
                 <Text style={styles.featureTitle}>Breathe</Text>
                 <Text style={styles.featureDesc}>Guided breathing to calm your nervous system</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
-              <Text style={styles.featureEmoji}>📝</Text>
+              <Feather name="book-open" size={24} color={colors.primary} />
               <View style={styles.featureTextGroup}>
                 <Text style={styles.featureTitle}>Journal</Text>
                 <Text style={styles.featureDesc}>Therapist-crafted prompts to process your thoughts</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
-              <Text style={styles.featureEmoji}>💜</Text>
+              <Feather name="heart" size={24} color={colors.primary} />
               <View style={styles.featureTextGroup}>
                 <Text style={styles.featureTitle}>Affirm</Text>
                 <Text style={styles.featureDesc}>Daily affirmations to remind you of your worth</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
-              <Text style={styles.featureEmoji}>🌿</Text>
+              <Feather name="layers" size={24} color={colors.primary} />
               <View style={styles.featureTextGroup}>
                 <Text style={styles.featureTitle}>Ground</Text>
                 <Text style={styles.featureDesc}>Sensory exercises to anchor you in the present</Text>
@@ -172,10 +174,9 @@ export default function OnboardingFlow() {
     <SafeAreaView style={styles.container}>
       {renderDots()}
       <View style={styles.centerContent}>
-        <Text style={styles.readyEmoji}>🙏</Text>
         <Text style={styles.title}>You're all set, {name}!</Text>
         <Text style={styles.body}>
-          No pressure, no streaks to chase. Just show up when you need it. This space is yours.
+          This space is yours. Show up when you need it, however you need it.
         </Text>
       </View>
       <PillButton
@@ -227,6 +228,13 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: spacing.lg,
   },
+  byLine: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#7C6E60',
+    marginBottom: 8,
+  },
   tagline: {
     ...typography.body,
     color: colors.textMuted,
@@ -270,9 +278,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  featureEmoji: {
-    fontSize: 28,
-  },
   featureTextGroup: {
     flex: 1,
   },
@@ -294,10 +299,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: 'center',
     marginTop: -spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  readyEmoji: {
-    fontSize: 56,
     marginBottom: spacing.lg,
   },
   bottomButton: {
