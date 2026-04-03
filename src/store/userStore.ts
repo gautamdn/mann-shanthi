@@ -8,6 +8,7 @@ import {
   pushJournalEntriesToSupabase,
   syncAll,
 } from '../services/syncService';
+import type { PatientAssignment } from '../types/assignments';
 
 export interface MoodEntry {
   date: string;
@@ -29,6 +30,8 @@ interface UserState {
   streak: number;
   lastActiveDate: string;
   journalEntries: JournalEntry[];
+  role: 'public' | 'patient' | 'therapist';
+  assignments: PatientAssignment[];
 }
 
 interface UserActions {
@@ -38,6 +41,7 @@ interface UserActions {
   logMood: (mood: 1 | 2 | 3 | 4 | 5) => void;
   addJournalEntry: (prompt: string, body: string) => void;
   updateStreak: () => void;
+  setAssignments: (assignments: PatientAssignment[]) => void;
   hydrate: () => Promise<void>;
   clearUserData: () => Promise<void>;
 }
@@ -52,6 +56,8 @@ const initialState: UserState = {
   streak: 0,
   lastActiveDate: '',
   journalEntries: [],
+  role: 'public',
+  assignments: [],
 };
 
 function getProfileData(state: UserState) {
@@ -61,6 +67,7 @@ function getProfileData(state: UserState) {
     hasSkippedAuth: state.hasSkippedAuth,
     streak: state.streak,
     lastActiveDate: state.lastActiveDate,
+    role: state.role,
   };
 }
 
@@ -137,6 +144,10 @@ export const useUserStore = create<UserStore>((set, get) => ({
     persistState(get());
   },
 
+  setAssignments: (assignments: PatientAssignment[]) => {
+    set({ assignments });
+  },
+
   hydrate: async () => {
     const stored = await loadFromStorage<UserState>(KEYS.USER_STORE);
     if (stored) {
@@ -156,6 +167,8 @@ export const useUserStore = create<UserStore>((set, get) => ({
           lastActiveDate: currentState.lastActiveDate,
           moodLog: currentState.moodLog,
           journalEntries: currentState.journalEntries,
+          role: currentState.role,
+          assignments: currentState.assignments,
         });
         set(merged);
         persistState({ ...get(), ...merged });
@@ -180,6 +193,7 @@ function persistState(state: UserStore): void {
     streak,
     lastActiveDate,
     journalEntries,
+    role,
   } = state;
   saveToStorage(KEYS.USER_STORE, {
     userName,
@@ -189,5 +203,6 @@ function persistState(state: UserStore): void {
     streak,
     lastActiveDate,
     journalEntries,
+    role,
   });
 }
