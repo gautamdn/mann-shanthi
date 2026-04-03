@@ -46,6 +46,18 @@ Scan the QR code with [Expo Go](https://expo.dev/go) to run on your phone, or pr
 2. Run `supabase-schema.sql` in the SQL Editor
 3. Copy your Project URL and anon key into `.env.local`
 
+## Testing Therapist Mode
+
+1. Sign up as Manoshi in the app
+2. In the Supabase dashboard, run:
+   ```sql
+   UPDATE profiles SET role = 'therapist' WHERE id = '<manoshi-user-id>';
+   ```
+   (Find the user ID in the `profiles` table or `auth.users`)
+3. Reopen the app — the Therapist Dashboard with Patients, Assign, and Codes tabs will appear
+4. Generate an invite code from the Codes tab
+5. Sign up as a different user, enter the invite code from the Home screen to unlock patient mode
+
 ## License
 
 Private — not open source.
