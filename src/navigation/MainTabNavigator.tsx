@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import HomeScreen from '../screens/home/HomeScreen';
 import BreatheScreen from '../screens/breathe/BreatheScreen';
 import GroundScreen from '../screens/ground/GroundScreen';
@@ -12,12 +13,12 @@ import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TAB_ICONS: Record<keyof MainTabParamList, string> = {
-  Home: '🏠',
-  Breathe: '🌬️',
-  Ground: '🌿',
-  Journal: '📝',
-  Affirm: '💜',
+const TAB_ICONS: Record<keyof MainTabParamList, React.ComponentProps<typeof Feather>['name']> = {
+  Home: 'home',
+  Breathe: 'wind',
+  Ground: 'layers',
+  Journal: 'book-open',
+  Affirm: 'heart',
 };
 
 export function MainTabNavigator() {
@@ -25,10 +26,8 @@ export function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused }) => (
-          <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>
-            {TAB_ICONS[route.name]}
-          </Text>
+        tabBarIcon: ({ color, size }) => (
+          <Feather name={TAB_ICONS[route.name]} size={size} color={color} />
         ),
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
@@ -55,11 +54,5 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
-  },
-  tabIcon: {
-    fontSize: 22,
-  },
-  tabIconFocused: {
-    fontSize: 24,
   },
 });
