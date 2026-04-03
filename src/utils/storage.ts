@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
   USER_STORE: '@antara/user-store',
+  ASSIGNMENTS: '@antara/assignments',
   _LEGACY_USER_STORE: '@mann-shanthi/user-store',
 } as const;
 

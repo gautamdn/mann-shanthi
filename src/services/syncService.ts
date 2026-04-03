@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { MoodEntry, JournalEntry } from '../store/userStore';
+import type { PatientAssignment } from '../types/assignments';
 
 interface ProfileData {
   userName: string;
@@ -7,11 +8,13 @@ interface ProfileData {
   hasSkippedAuth: boolean;
   streak: number;
   lastActiveDate: string;
+  role: 'public' | 'patient' | 'therapist';
 }
 
 interface SyncableState extends ProfileData {
   moodLog: MoodEntry[];
   journalEntries: JournalEntry[];
+  assignments: PatientAssignment[];
 }
 
 export async function pushProfileToSupabase(
@@ -69,7 +72,7 @@ async function pullProfileFromSupabase(
 ): Promise<ProfileData | null> {
   const { data } = await supabase
     .from('profiles')
-    .select('user_name, has_onboarded, streak, last_active_date')
+    .select('user_name, has_onboarded, streak, last_active_date, role')
     .eq('id', userId)
     .single();
 
@@ -81,6 +84,7 @@ async function pullProfileFromSupabase(
     hasSkippedAuth: false,
     streak: data.streak ?? 0,
     lastActiveDate: data.last_active_date ?? '',
+    role: (data.role as ProfileData['role']) ?? 'public',
   };
 }
 
@@ -118,6 +122,44 @@ async function pullJournalEntriesFromSupabase(
     prompt: row.prompt,
     body: row.body,
   }));
+}
+
+export async function pullAssignmentsFromSupabase(
+  userId: string,
+): Promise<PatientAssignment[]> {
+  const { data } = await supabase
+    .from('patient_assignments')
+    .select('id, type, content, assigned_by, assigned_at, completed_at')
+    .eq('patient_id', userId)
+    .is('completed_at', null)
+    .order('assigned_at', { ascending: false });
+
+  if (!data) return [];
+
+  return data.map((row: {
+    id: string;
+    type: string;
+    content: unknown;
+    assigned_by: string;
+    assigned_at: string;
+    completed_at: string | null;
+  }) => ({
+    id: row.id,
+    type: row.type as PatientAssignment['type'],
+    content: row.content as PatientAssignment['content'],
+    assignedBy: row.assigned_by,
+    assignedAt: row.assigned_at,
+    completedAt: row.completed_at,
+  }));
+}
+
+export async function markAssignmentComplete(
+  assignmentId: string,
+): Promise<void> {
+  await supabase
+    .from('patient_assignments')
+    .update({ completed_at: new Date().toISOString() })
+    .eq('id', assignmentId);
 }
 
 function mergeMoodLogs(local: MoodEntry[], remote: MoodEntry[]): MoodEntry[] {
@@ -163,10 +205,11 @@ export async function syncAll(
   ]);
 
   // Pull remote data
-  const [remoteProfile, remoteMoods, remoteJournals] = await Promise.all([
+  const [remoteProfile, remoteMoods, remoteJournals, remoteAssignments] = await Promise.all([
     pullProfileFromSupabase(userId),
     pullMoodLogsFromSupabase(userId),
     pullJournalEntriesFromSupabase(userId),
+    pullAssignmentsFromSupabase(userId),
   ]);
 
   // Merge: local wins for conflicts, union for new entries
@@ -185,7 +228,9 @@ export async function syncAll(
       localState.lastActiveDate > (remoteProfile?.lastActiveDate ?? '')
         ? localState.lastActiveDate
         : (remoteProfile?.lastActiveDate ?? ''),
+    role: remoteProfile?.role ?? localState.role,
     moodLog: mergedMoodLog,
     journalEntries: mergedJournals,
+    assignments: remoteAssignments,
   };
 }
