@@ -92,7 +92,7 @@ export default function JournalScreen() {
 
       {showSuccess ? (
         <View style={styles.successBanner}>
-          <Text style={styles.successText}>Entry saved! Keep showing up for yourself.</Text>
+          <Text style={styles.successText}>Entry saved.</Text>
         </View>
       ) : (
         <PillButton
