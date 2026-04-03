@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -9,6 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 import { PillButton } from '../../components/common/PillButton';
 
 export default function InviteCodeScreen() {
+  const navigation = useNavigation();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -39,6 +41,7 @@ export default function InviteCodeScreen() {
           <Text style={styles.body}>
             Your account has been upgraded. You now have access to personalized content from your therapist.
           </Text>
+          <PillButton label="Done" onPress={() => navigation.goBack()} />
         </View>
       </SafeAreaView>
     );
@@ -47,6 +50,9 @@ export default function InviteCodeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
+          <Text style={styles.closeText}>Close</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>Invite Code</Text>
         <Text style={styles.body}>
           If your therapist gave you an invite code, enter it below to unlock personalized content.
@@ -81,7 +87,16 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing.lg,
-    paddingTop: spacing.xxl,
+    paddingTop: spacing.md,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  closeText: {
+    ...typography.bodyMedium,
+    color: colors.primary,
   },
   centerContent: {
     flex: 1,
