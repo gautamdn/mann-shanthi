@@ -68,7 +68,6 @@ export default function AffirmScreen() {
           style={[styles.card, { transform: [{ translateX }] }]}
           {...panResponder.panHandlers}
         >
-          <Text style={styles.emoji}>{current.emoji}</Text>
           <Text style={styles.affirmationText}>{current.text}</Text>
           <Text style={styles.subtext}>{current.subtext}</Text>
           <Text style={styles.author}>— {current.author}</Text>
@@ -119,10 +118,6 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH - spacing.lg * 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 48,
-    marginBottom: spacing.lg,
   },
   affirmationText: {
     ...typography.heading,
