@@ -84,7 +84,8 @@ export default function AuthScreen() {
           <View style={styles.header}>
             <Text style={styles.appName}>अंतरा</Text>
             <Text style={styles.appNameEnglish}>Antara</Text>
-            <Text style={styles.tagline}>Your inner calm, always within reach</Text>
+            <Text style={styles.byLine}>by Manoshi Vin, LCSW</Text>
+            <Text style={styles.tagline}>Because, you matter.</Text>
           </View>
 
           <View style={styles.form}>
@@ -188,9 +189,19 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: spacing.sm,
   },
+  byLine: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#7C6E60',
+    marginBottom: 8,
+  },
   tagline: {
-    ...typography.caption,
-    color: colors.textMuted,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    lineHeight: 20,
+    fontStyle: 'italic',
+    color: '#7C6E60',
     textAlign: 'center',
   },
   form: {
