@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -21,7 +22,7 @@ import { Card } from '../../components/common/Card';
 import { PillButton } from '../../components/common/PillButton';
 
 export default function JournalScreen() {
-  const { journalEntries, addJournalEntry } = useJournal();
+  const { journalEntries, addJournalEntry, deleteJournalEntry } = useJournal();
   const { getJournalPrompt } = useContentMode();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const { prompt: initialPrompt, isAssigned } = getJournalPrompt();
@@ -53,87 +54,106 @@ export default function JournalScreen() {
     setTimeout(() => setShowSuccess(false), 2500);
   };
 
+  const handleDelete = useCallback((id: string) => {
+    Alert.alert('Delete entry?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          deleteJournalEntry(id);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
+  }, [deleteJournalEntry]);
+
   const truncate = (text: string, maxLength: number): string => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength).trimEnd() + '...';
   };
-
-  const renderHeader = () => (
-    <View>
-      <Text style={styles.title}>Journal</Text>
-
-      <View style={styles.themeRow}>
-        {journalThemes.map((theme) => (
-          <TouchableOpacity
-            key={theme}
-            style={[styles.themePill, selectedTheme === theme && styles.themePillActive]}
-            onPress={() => handleThemeSelect(theme)}
-          >
-            <Text
-              style={[
-                styles.themePillText,
-                selectedTheme === theme && styles.themePillTextActive,
-              ]}
-            >
-              {theme}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Card style={styles.promptCard}>
-        <Text style={styles.promptLabel}>
-          {isCurrentAssigned ? 'Assigned by your therapist' : "Today's Prompt"}
-        </Text>
-        <Text style={styles.promptText}>{currentPrompt.text}</Text>
-        <Text style={styles.attribution}>Prompt by Manoshi Vin, LCSW</Text>
-      </Card>
-
-      <TextInput
-        style={styles.textArea}
-        placeholder="Start writing here..."
-        placeholderTextColor={colors.textMuted}
-        multiline
-        textAlignVertical="top"
-        value={body}
-        onChangeText={setBody}
-      />
-
-      {showSuccess ? (
-        <View style={styles.successBanner}>
-          <Text style={styles.successText}>Entry saved.</Text>
-        </View>
-      ) : (
-        <PillButton
-          label="Save Entry"
-          onPress={handleSave}
-          color={colors.accentAmber}
-          disabled={!body.trim()}
-          style={styles.saveButton}
-        />
-      )}
-
-      {journalEntries.length > 0 && (
-        <Text style={styles.pastTitle}>Past Entries</Text>
-      )}
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
         data={journalEntries}
         keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={
+          <View>
+            <Text style={styles.title}>Journal</Text>
+
+            <View style={styles.themeRow}>
+              {journalThemes.map((theme) => (
+                <TouchableOpacity
+                  key={theme}
+                  style={[styles.themePill, selectedTheme === theme && styles.themePillActive]}
+                  onPress={() => handleThemeSelect(theme)}
+                >
+                  <Text
+                    style={[
+                      styles.themePillText,
+                      selectedTheme === theme && styles.themePillTextActive,
+                    ]}
+                  >
+                    {theme}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Card style={styles.promptCard}>
+              <Text style={styles.promptLabel}>
+                {isCurrentAssigned ? 'Assigned by your therapist' : "Today's Prompt"}
+              </Text>
+              <Text style={styles.promptText}>{currentPrompt.text}</Text>
+              <Text style={styles.attribution}>Prompt by Manoshi Vin, LCSW</Text>
+            </Card>
+
+            <TextInput
+              style={styles.textArea}
+              placeholder="Start writing here..."
+              placeholderTextColor={colors.textMuted}
+              multiline
+              textAlignVertical="top"
+              value={body}
+              onChangeText={setBody}
+            />
+
+            {showSuccess ? (
+              <View style={styles.successBanner}>
+                <Text style={styles.successText}>Entry saved.</Text>
+              </View>
+            ) : (
+              <PillButton
+                label="Save Entry"
+                onPress={handleSave}
+                color={colors.accentAmber}
+                disabled={!body.trim()}
+                style={styles.saveButton}
+              />
+            )}
+
+            {journalEntries.length > 0 && (
+              <Text style={styles.pastTitle}>Past Entries</Text>
+            )}
+          </View>
+        }
         ListEmptyComponent={
           <Text style={styles.emptyText}>No entries yet. Start writing!</Text>
         }
         renderItem={({ item }) => (
-          <Card style={styles.entryCard}>
-            <Text style={styles.entryDate}>{formatDate(item.date)}</Text>
-            <Text style={styles.entryBody}>{truncate(item.body, 80)}</Text>
-          </Card>
+          <TouchableOpacity
+            onLongPress={() => handleDelete(item.id)}
+            delayLongPress={500}
+          >
+            <Card style={styles.entryCard}>
+              <Text style={styles.entryDate}>{formatDate(item.date)}</Text>
+              <Text style={styles.entryBody}>{truncate(item.body, 80)}</Text>
+              <Text style={styles.deleteHint}>Long press to delete</Text>
+            </Card>
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>
@@ -231,6 +251,12 @@ const styles = StyleSheet.create({
   },
   entryBody: {
     ...typography.body,
+  },
+  deleteHint: {
+    ...typography.caption,
+    fontSize: 11,
+    marginTop: spacing.sm,
+    color: colors.textMuted,
   },
   emptyText: {
     ...typography.body,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -40,6 +40,21 @@ export default function HomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await signOut();
     await clearUserData();
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert('Delete all data?', 'This will sign you out and erase all local data.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+          await clearUserData();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
   };
 
   return (
@@ -107,6 +122,13 @@ export default function HomeScreen() {
         >
           <Text style={styles.sosTitle}>Need a moment?</Text>
           <Text style={styles.sosSubtext}>Take a breath and return to yourself.</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteAccount}
+        >
+          <Text style={styles.deleteText}>Delete all data & sign out</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -217,5 +239,14 @@ const styles = StyleSheet.create({
   },
   sosSubtext: {
     ...typography.caption,
+  },
+  deleteButton: {
+    alignItems: 'center',
+    marginTop: spacing.lg,
+    padding: spacing.md,
+  },
+  deleteText: {
+    ...typography.caption,
+    color: colors.error,
   },
 });

@@ -42,6 +42,7 @@ interface UserActions {
   addJournalEntry: (prompt: string, body: string) => void;
   updateStreak: () => void;
   setAssignments: (assignments: PatientAssignment[]) => void;
+  deleteJournalEntry: (id: string) => void;
   hydrate: () => Promise<void>;
   clearUserData: () => Promise<void>;
 }
@@ -74,7 +75,7 @@ function getProfileData(state: UserState) {
 function tryRemoteSync(fn: () => Promise<unknown>): void {
   const userId = useAuthStore.getState().userId;
   if (userId) {
-    fn().catch(() => {});
+    fn().catch((err) => console.error('[sync error]', err));
   }
 }
 
@@ -146,6 +147,16 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   setAssignments: (assignments: PatientAssignment[]) => {
     set({ assignments });
+  },
+
+  deleteJournalEntry: (id: string) => {
+    set((state) => ({
+      journalEntries: state.journalEntries.filter((e) => e.id !== id),
+    }));
+    persistState(get());
+    tryRemoteSync(() =>
+      pushJournalEntriesToSupabase(useAuthStore.getState().userId!, get().journalEntries),
+    );
   },
 
   hydrate: async () => {
