@@ -138,5 +138,5 @@ src/
 - [ ] Polish: transitions, empty states, keyboard handling
 - [ ] Splash screen + app icon branding
 - [ ] Build out therapist Patients and Assign screens
-- [ ] Run v2 SQL migration in Supabase
+- [ ] Run v2 SQL migration in Supabase (see supabase-schema.sql)
 - [ ] TestFlight build via EAS
