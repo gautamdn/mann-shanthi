@@ -116,7 +116,7 @@ src/
 - Swipe gestures use `PanResponder` from React Native
 
 ## Current phase
-**Day 3 of sprint.**
+**Day 3 of sprint.** Rebrand complete.
 
 ### Completed
 - [x] Theme system (colors, typography, spacing)
