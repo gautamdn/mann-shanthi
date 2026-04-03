@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -10,9 +11,11 @@ import { spacing, borderRadius } from '../../theme/spacing';
 import { useUserStore } from '../../store/userStore';
 import { useAuthStore } from '../../store/authStore';
 import { useMoodLog } from '../../hooks/useMoodLog';
+import { useContentMode } from '../../hooks/useContentMode';
 import { MoodSelector } from '../../components/home/MoodSelector';
 import { FeatureCard } from '../../components/home/FeatureCard';
-import type { MainTabParamList } from '../../navigation/types';
+import { Card } from '../../components/common/Card';
+import type { MainTabParamList, RootStackParamList } from '../../navigation/types';
 
 type HomeNav = BottomTabNavigationProp<MainTabParamList, 'Home'>;
 
@@ -29,7 +32,9 @@ export default function HomeScreen() {
   const clearUserData = useUserStore((state) => state.clearUserData);
   const { isAuthenticated, email, signOut } = useAuthStore();
   const { todayMood, logMood } = useMoodLog();
+  const { isPatient, assignments } = useContentMode();
   const navigation = useNavigation<HomeNav>();
+  const rootNavigation = useNavigation() as StackNavigationProp<RootStackParamList>;
 
   const handleSignOut = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -73,6 +78,28 @@ export default function HomeScreen() {
             />
           ))}
         </View>
+
+        {isPatient && assignments.length > 0 && (
+          <View style={styles.assignmentsSection}>
+            <Text style={styles.sectionTitle}>From your therapist</Text>
+            {assignments.map((a) => (
+              <Card key={a.id} style={styles.assignmentCard}>
+                <Text style={styles.assignmentType}>
+                  {a.type === 'journal_prompt' ? 'Journal prompt' : a.type === 'breathing_exercise' ? 'Breathing exercise' : 'Weekly plan'}
+                </Text>
+              </Card>
+            ))}
+          </View>
+        )}
+
+        {!isPatient && isAuthenticated && (
+          <TouchableOpacity
+            style={styles.inviteCard}
+            onPress={() => rootNavigation.navigate('InviteCode')}
+          >
+            <Text style={styles.inviteText}>Have an invite code from your therapist?</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.sosCard}
@@ -148,6 +175,32 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.md,
     marginBottom: spacing.lg,
+  },
+  assignmentsSection: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    ...typography.bodyMedium,
+    marginBottom: spacing.md,
+  },
+  assignmentCard: {
+    marginBottom: spacing.sm,
+  },
+  assignmentType: {
+    ...typography.bodyMedium,
+  },
+  inviteCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.card,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+  },
+  inviteText: {
+    ...typography.caption,
+    color: colors.primary,
   },
   sosCard: {
     backgroundColor: colors.card,
