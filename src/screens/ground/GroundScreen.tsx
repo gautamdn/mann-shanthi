@@ -11,16 +11,15 @@ import { PillButton } from '../../components/common/PillButton';
 interface GroundingStep {
   count: number;
   sense: string;
-  emoji: string;
   prompt: string;
 }
 
 const GROUNDING_STEPS: GroundingStep[] = [
-  { count: 5, sense: 'SEE', emoji: '👁️', prompt: '5 things you can see' },
-  { count: 4, sense: 'TOUCH', emoji: '✋', prompt: '4 things you can touch' },
-  { count: 3, sense: 'HEAR', emoji: '👂', prompt: '3 things you can hear' },
-  { count: 2, sense: 'SMELL', emoji: '👃', prompt: '2 things you can smell' },
-  { count: 1, sense: 'TASTE', emoji: '👅', prompt: '1 thing you can taste' },
+  { count: 5, sense: 'SEE', prompt: '5 things you can see' },
+  { count: 4, sense: 'TOUCH', prompt: '4 things you can touch' },
+  { count: 3, sense: 'HEAR', prompt: '3 things you can hear' },
+  { count: 2, sense: 'SMELL', prompt: '2 things you can smell' },
+  { count: 1, sense: 'TASTE', prompt: '1 thing you can taste' },
 ];
 
 export default function GroundScreen() {
@@ -56,8 +55,7 @@ export default function GroundScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.completeContainer}>
-          <Text style={styles.completeEmoji}>🌿</Text>
-          <Text style={styles.completeTitle}>Well done!</Text>
+          <Text style={styles.completeTitle}>Well done.</Text>
           <Text style={styles.completeBody}>
             Take a moment to notice how you feel. You've reconnected with the present moment.
           </Text>
@@ -94,7 +92,9 @@ export default function GroundScreen() {
                 onPress={() => handleToggleStep(index)}
               >
                 <View style={styles.stepHeaderLeft}>
-                  <Text style={styles.stepEmoji}>{step.emoji}</Text>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>{step.count}</Text>
+                  </View>
                   <View>
                     <Text style={styles.stepSense}>{step.sense}</Text>
                     <Text style={styles.stepPrompt}>{step.prompt}</Text>
@@ -169,8 +169,18 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     flex: 1,
   },
-  stepEmoji: {
-    fontSize: 24,
+  stepNumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumberText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    color: colors.textLight,
   },
   stepSense: {
     ...typography.bodyMedium,
@@ -204,10 +214,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
-  },
-  completeEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
   },
   completeTitle: {
     ...typography.heading,
