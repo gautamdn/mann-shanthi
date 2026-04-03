@@ -2,6 +2,8 @@ export type RootStackParamList = {
   Auth: undefined;
   Onboarding: undefined;
   MainTabs: undefined;
+  InviteCode: undefined;
+  TherapistTabs: undefined;
 };
 
 export type MainTabParamList = {
@@ -10,4 +12,10 @@ export type MainTabParamList = {
   Ground: undefined;
   Journal: undefined;
   Affirm: undefined;
+};
+
+export type TherapistTabParamList = {
+  Patients: undefined;
+  Assign: undefined;
+  Codes: undefined;
 };
